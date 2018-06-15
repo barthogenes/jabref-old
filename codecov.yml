@@ -1,5 +1,3 @@
-codecov:
-  branch: v4.x
 coverage:
   ignore:
   - src/gen/.*
