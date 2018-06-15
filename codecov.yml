@@ -1,4 +1,5 @@
 coverage:
+  branch: v4.x
   ignore:
   - src/gen/.*
   status:
