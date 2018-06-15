@@ -40,6 +40,10 @@ before_install:
 
 install: true
 
+addons:
+  sonarcloud:
+    organization: "barthogenes-github"
+
 before_script:
   - psql -c 'create database jabref;' -U postgres
   - mysql -u root -e 'create database jabref'
@@ -57,10 +61,9 @@ after_failure:
   # show test results if build fails
   - $TRAVIS_BUILD_DIR/scripts/after-failure.sh
 
-branches:
-  only:
-    - master
-
+after_success:
+  - sonar-scanner -Dproject.settings=./sonar-scanner.properties -Dsonar.login=${SONAR_TOKEN}
+      
 # cache gradle dependencies
 # https://docs.travis-ci.com/user/languages/java#Caching
 before_cache:
