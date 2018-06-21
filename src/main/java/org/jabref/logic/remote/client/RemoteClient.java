@@ -61,8 +61,12 @@ public class RemoteClient {
     }
 
     private Protocol openNewConnection() throws IOException {
-        Socket socket = new Socket(RemotePreferences.getIpAddress(), port);
-        socket.setSoTimeout(TIMEOUT);
-        return new Protocol(socket);
+        try(Socket socket = new Socket(RemotePreferences.getIpAddress(), port);)
+        {
+            socket.setSoTimeout(TIMEOUT);
+            return new Protocol(socket);
+        }
+
+
     }
 }
