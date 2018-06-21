@@ -40,6 +40,7 @@ public class JavaVersion {
             if (scanner.hasNextInt()) {
                 return isAtLeast("1.9");
             }
+            scanner.close();
         }
         return false;
     }
@@ -57,18 +58,21 @@ public class JavaVersion {
         if (JAVA_VERSION == null || version == null) {
             return true;
         }
-        final Scanner scannerRunningVersion = new Scanner(JAVA_VERSION);
-        final Scanner scannerRequiredVersion = new Scanner(version);
-        scannerRunningVersion.useDelimiter(DELIMITER);
-        scannerRequiredVersion.useDelimiter(DELIMITER);
-        while (scannerRunningVersion.hasNextInt() && scannerRequiredVersion.hasNextInt()) {
-            final int running = scannerRunningVersion.nextInt();
-            final int required = scannerRequiredVersion.nextInt();
-            if (running == required) {
-                continue;
+        try (Scanner scannerRunningVersion = new Scanner(JAVA_VERSION);
+             Scanner scannerRequiredVersion = new Scanner(JAVA_VERSION))
+        {
+            scannerRunningVersion.useDelimiter(DELIMITER);
+            scannerRequiredVersion.useDelimiter(DELIMITER);
+            while (scannerRunningVersion.hasNextInt() && scannerRequiredVersion.hasNextInt()) {
+                final int running = scannerRunningVersion.nextInt();
+                final int required = scannerRequiredVersion.nextInt();
+                if (running == required) {
+                    continue;
+                }
+                return running >= required;
             }
-            return running >= required;
         }
+
         return true;
     }
 

@@ -25,7 +25,7 @@ public class JEditorPaneWithHighlighting extends JEditorPane implements SearchQu
         Highlighter highlighter = getHighlighter();
         highlighter.removeAllHighlights();
 
-        if ((highlightPattern == null) || !highlightPattern.isPresent()) {
+        if (!highlightPattern.isPresent()) {
             return;
         }
 
