@@ -35,8 +35,7 @@ public class JavaVersion {
         if (JAVA_VERSION != null) {
             // Since isAtLeast is very optimistic, we first need to check if we have a "number" in the version string
             // at all. Otherwise we would get false-positives.
-            try(final Scanner scanner = new Scanner(JAVA_VERSION))
-            {
+            try (final Scanner scanner = new Scanner(JAVA_VERSION)) {
                 scanner.useDelimiter(DELIMITER);
                 if (scanner.hasNextInt()) {
                     return isAtLeast("1.9");
@@ -59,9 +58,9 @@ public class JavaVersion {
         if (JAVA_VERSION == null || version == null) {
             return true;
         }
-        try (Scanner scannerRunningVersion = new Scanner(JAVA_VERSION);
-             Scanner scannerRequiredVersion = new Scanner(JAVA_VERSION))
-        {
+
+        try (final Scanner scannerRunningVersion = new Scanner(JAVA_VERSION);
+             final Scanner scannerRequiredVersion = new Scanner(version)) {
             scannerRunningVersion.useDelimiter(DELIMITER);
             scannerRequiredVersion.useDelimiter(DELIMITER);
             while (scannerRunningVersion.hasNextInt() && scannerRequiredVersion.hasNextInt()) {
@@ -73,7 +72,6 @@ public class JavaVersion {
                 return running >= required;
             }
         }
-
         return true;
     }
 
