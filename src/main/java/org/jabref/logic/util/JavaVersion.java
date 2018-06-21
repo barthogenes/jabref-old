@@ -40,6 +40,7 @@ public class JavaVersion {
             if (scanner.hasNextInt()) {
                 return isAtLeast("1.9");
             }
+            scanner.close();
         }
         return false;
     }
@@ -69,6 +70,8 @@ public class JavaVersion {
             }
             return running >= required;
         }
+        scannerRunningVersion.close();
+        scannerRequiredVersion.close();
         return true;
     }
 
