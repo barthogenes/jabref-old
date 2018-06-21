@@ -35,12 +35,13 @@ public class JavaVersion {
         if (JAVA_VERSION != null) {
             // Since isAtLeast is very optimistic, we first need to check if we have a "number" in the version string
             // at all. Otherwise we would get false-positives.
-            final Scanner scanner = new Scanner(JAVA_VERSION);
-            scanner.useDelimiter(DELIMITER);
-            if (scanner.hasNextInt()) {
-                return isAtLeast("1.9");
+            try(final Scanner scanner = new Scanner(JAVA_VERSION))
+            {
+                scanner.useDelimiter(DELIMITER);
+                if (scanner.hasNextInt()) {
+                    return isAtLeast("1.9");
+                }
             }
-            scanner.close();
         }
         return false;
     }
