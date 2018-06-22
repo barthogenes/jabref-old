@@ -232,7 +232,7 @@ public class ImportMenuItem extends JMenuItem implements ActionListener {
                 ParserResult pr = importResult.parserResult;
                 Collection<BibEntry> entries = pr.getDatabase().getEntries();
 
-                anythingUseful = anythingUseful | !entries.isEmpty();
+                anythingUseful = anythingUseful || !entries.isEmpty();
 
                 // set timestamp and owner
                 UpdateField.setAutomaticFields(entries, Globals.prefs.getUpdateFieldPreferences()); // set timestamp and owner

@@ -35,10 +35,11 @@ public class JavaVersion {
         if (JAVA_VERSION != null) {
             // Since isAtLeast is very optimistic, we first need to check if we have a "number" in the version string
             // at all. Otherwise we would get false-positives.
-            final Scanner scanner = new Scanner(JAVA_VERSION);
-            scanner.useDelimiter(DELIMITER);
-            if (scanner.hasNextInt()) {
-                return isAtLeast("1.9");
+            try (final Scanner scanner = new Scanner(JAVA_VERSION)) {
+                scanner.useDelimiter(DELIMITER);
+                if (scanner.hasNextInt()) {
+                    return isAtLeast("1.9");
+                }
             }
         }
         return false;
@@ -57,17 +58,19 @@ public class JavaVersion {
         if (JAVA_VERSION == null || version == null) {
             return true;
         }
-        final Scanner scannerRunningVersion = new Scanner(JAVA_VERSION);
-        final Scanner scannerRequiredVersion = new Scanner(version);
-        scannerRunningVersion.useDelimiter(DELIMITER);
-        scannerRequiredVersion.useDelimiter(DELIMITER);
-        while (scannerRunningVersion.hasNextInt() && scannerRequiredVersion.hasNextInt()) {
-            final int running = scannerRunningVersion.nextInt();
-            final int required = scannerRequiredVersion.nextInt();
-            if (running == required) {
-                continue;
+
+        try (final Scanner scannerRunningVersion = new Scanner(JAVA_VERSION);
+             final Scanner scannerRequiredVersion = new Scanner(version)) {
+            scannerRunningVersion.useDelimiter(DELIMITER);
+            scannerRequiredVersion.useDelimiter(DELIMITER);
+            while (scannerRunningVersion.hasNextInt() && scannerRequiredVersion.hasNextInt()) {
+                final int running = scannerRunningVersion.nextInt();
+                final int required = scannerRequiredVersion.nextInt();
+                if (running == required) {
+                    continue;
+                }
+                return running >= required;
             }
-            return running >= required;
         }
         return true;
     }

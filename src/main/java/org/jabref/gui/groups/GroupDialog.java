@@ -603,7 +603,7 @@ class GroupDialog extends JabRefDialog implements Dialog<AbstractGroup> {
             setNameFontItalic(true);
         } else if (searchRadioButton.isSelected()) {
             s1 = searchGroupSearchExpression.getText().trim();
-            okEnabled = okEnabled & !s1.isEmpty();
+            okEnabled = okEnabled && !s1.isEmpty();
             if (okEnabled) {
                 setDescription(fromTextFlowToHTMLString(SearchDescribers.getSearchDescriberFor(
                         new SearchQuery(s1, isCaseSensitive(), isRegex())).getDescription()));
