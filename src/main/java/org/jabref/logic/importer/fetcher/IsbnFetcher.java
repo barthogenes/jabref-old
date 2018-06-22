@@ -16,8 +16,19 @@ import org.jsoup.helper.StringUtil;
  */
 public class IsbnFetcher extends AbstractIsbnFetcher {
 
+    private IsbnViaEbookDeFetcher isbnViaEbookDeFetcher;
+    private IsbnViaChimboriFetcher isbnViaChimboriFetcher;
+
     public IsbnFetcher(ImportFormatPreferences importFormatPreferences) {
         super(importFormatPreferences);
+        isbnViaEbookDeFetcher = new IsbnViaEbookDeFetcher(importFormatPreferences);
+        isbnViaChimboriFetcher = new IsbnViaChimboriFetcher(importFormatPreferences);
+    }
+
+    public IsbnFetcher(ImportFormatPreferences importFormatPreferences, IsbnViaEbookDeFetcher isbnViaEbookDeFetcher, IsbnViaChimboriFetcher isbnViaChimboriFetcher) {
+        super(importFormatPreferences);
+        this.isbnViaEbookDeFetcher = isbnViaEbookDeFetcher;
+        this.isbnViaChimboriFetcher = isbnViaChimboriFetcher;
     }
 
     @Override
@@ -41,12 +52,10 @@ public class IsbnFetcher extends AbstractIsbnFetcher {
 
         this.ensureThatIsbnIsValid(identifier);
 
-        IsbnViaEbookDeFetcher isbnViaEbookDeFetcher = new IsbnViaEbookDeFetcher(importFormatPreferences);
         Optional<BibEntry> bibEntry = isbnViaEbookDeFetcher.performSearchById(identifier);
         // nothing found at ebook.de, try chimbori.com
         if (!bibEntry.isPresent()) {
             LOGGER.debug("No entry found at ebook.de try chimbori.com");
-            IsbnViaChimboriFetcher isbnViaChimboriFetcher = new IsbnViaChimboriFetcher(importFormatPreferences);
             bibEntry = isbnViaChimboriFetcher.performSearchById(identifier);
 
         }
