@@ -9,14 +9,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jabref.Globals;
+import org.jabref.gui.Globals;
 import org.jabref.logic.importer.FetcherException;
 import org.jabref.logic.importer.ParserResult;
 import org.jabref.logic.importer.fetcher.CrossRef;
 import org.jabref.logic.importer.fileformat.BibtexParser;
 import org.jabref.model.database.BibDatabase;
 import org.jabref.model.entry.BibEntry;
-import org.jabref.model.entry.FieldName;
+import org.jabref.model.entry.field.StandardField;
 import org.jabref.model.entry.identifier.DOI;
 import org.jabref.preferences.JabRefPreferences;
 
@@ -50,10 +50,9 @@ public class CrossrefFetcherEvaluator {
 
             for (BibEntry entry : entries) {
                 executorService.execute(new Runnable() {
-
                     @Override
                     public void run() {
-                        Optional<DOI> origDOI = entry.getField(FieldName.DOI).flatMap(DOI::parse);
+                        Optional<DOI> origDOI = entry.getField(StandardField.DOI).flatMap(DOI::parse);
                         if (origDOI.isPresent()) {
                             dois.incrementAndGet();
                             try {
@@ -71,7 +70,6 @@ public class CrossrefFetcherEvaluator {
                             } catch (FetcherException e) {
                                 e.printStackTrace();
                             }
-
                         } else {
                             try {
                                 Optional<DOI> crossrefDOI = new CrossRef().findIdentifier(entry);
@@ -86,7 +84,6 @@ public class CrossrefFetcherEvaluator {
                         countDownLatch.countDown();
                     }
                 });
-
             }
             countDownLatch.await();
 

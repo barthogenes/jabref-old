@@ -159,7 +159,6 @@ public class BibtexWidth {
     }
 
     public static int getCharWidth(char c) {
-
         if ((c >= 0) && (c < 128)) {
             return BibtexWidth.widths[c];
         } else {
@@ -167,15 +166,7 @@ public class BibtexWidth {
         }
     }
 
-    /**
-     *
-     * @param toMeasure
-     * @param warn
-     *            may-be-null
-     * @return
-     */
     public static int width(String toMeasure) {
-
         /*
          * From Bibtex: We use the natural width for all but special characters,
          * and we complain if the string isn't brace-balanced.

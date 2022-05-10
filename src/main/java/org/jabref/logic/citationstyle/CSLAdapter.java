@@ -3,14 +3,24 @@ package org.jabref.logic.citationstyle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import org.jabref.logic.formatter.bibtexfields.RemoveNewlinesFormatter;
-import org.jabref.logic.layout.format.HTMLChars;
+import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.BibEntryType;
+import org.jabref.model.entry.BibEntryTypesManager;
+import org.jabref.model.entry.Month;
+import org.jabref.model.entry.field.Field;
+import org.jabref.model.entry.field.StandardField;
+import org.jabref.model.strings.LatexToUnicodeAdapter;
 
 import de.undercouch.citeproc.CSL;
+import de.undercouch.citeproc.DefaultAbbreviationProvider;
 import de.undercouch.citeproc.ItemDataProvider;
 import de.undercouch.citeproc.bibtex.BibTeXConverter;
 import de.undercouch.citeproc.csl.CSLItemData;
@@ -29,9 +39,9 @@ import org.jbibtex.Key;
  * same style. Changing the output format is cheap.
  * @implNote The main function {@link #makeBibliography} will enforce
  * synchronized calling. The main CSL engine under the hood is not thread-safe. Since this class is usually called from
- * a SwingWorker, the only other option would be to create several CSL instances which is wasting a lot of resources and very slow.
+ * a BackgroundTakk, the only other option would be to create several CSL instances which is wasting a lot of resources and very slow.
  * In the current scheme, {@link #makeBibliography} can be called as usual
- * SwingWorker task and to the best of my knowledge, concurrent calls will pile up and processed sequentially.
+ * background task and to the best of my knowledge, concurrent calls will pile up and processed sequentially.
  */
 public class CSLAdapter {
 
@@ -44,9 +54,11 @@ public class CSLAdapter {
     /**
      * Creates the bibliography of the provided items. This method needs to run synchronized because the underlying
      * CSL engine is not thread-safe.
+     *
+     * @param databaseContext {@link BibDatabaseContext} is used to be able to resolve fields and their aliases
      */
-    public synchronized List<String> makeBibliography(List<BibEntry> bibEntries, String style, CitationStyleOutputFormat outputFormat) throws IOException, IllegalArgumentException {
-        dataProvider.setData(bibEntries);
+    public synchronized List<String> makeBibliography(List<BibEntry> bibEntries, String style, CitationStyleOutputFormat outputFormat, BibDatabaseContext databaseContext, BibEntryTypesManager entryTypesManager) throws IOException, IllegalArgumentException {
+        dataProvider.setData(bibEntries, databaseContext, entryTypesManager);
         initialize(style, outputFormat);
         cslInstance.registerCitationItems(dataProvider.getIds());
         final Bibliography bibliography = cslInstance.makeBibliography();
@@ -61,8 +73,10 @@ public class CSLAdapter {
      * @throws IOException An error occurred in the underlying JavaScript framework
      */
     private void initialize(String newStyle, CitationStyleOutputFormat newFormat) throws IOException {
-        if (cslInstance == null || !Objects.equals(newStyle, style)) {
-            cslInstance = new CSL(dataProvider, newStyle);
+        if ((cslInstance == null) || !Objects.equals(newStyle, style)) {
+            // lang and forceLang are set to the default values of other CSL constructors
+            cslInstance = new CSL(dataProvider, new JabRefLocaleProvider(),
+                    new DefaultAbbreviationProvider(), newStyle, "en-US");
             style = newStyle;
         }
 
@@ -78,45 +92,59 @@ public class CSLAdapter {
      */
     private static class JabRefItemDataProvider implements ItemDataProvider {
 
-        private ArrayList<BibEntry> data = new ArrayList<>();
+        private final List<BibEntry> data = new ArrayList<>();
+        private BibDatabaseContext bibDatabaseContext;
+        private BibEntryTypesManager entryTypesManager;
 
         /**
          * Converts the {@link BibEntry} into {@link CSLItemData}.
          */
-        private static CSLItemData bibEntryToCSLItemData(BibEntry bibEntry) {
-            String citeKey = bibEntry.getCiteKeyOptional().orElse("");
-            BibTeXEntry bibTeXEntry = new BibTeXEntry(new Key(bibEntry.getType()), new Key(citeKey));
+        private static CSLItemData bibEntryToCSLItemData(BibEntry bibEntry, BibDatabaseContext bibDatabaseContext, BibEntryTypesManager entryTypesManager) {
+            String citeKey = bibEntry.getCitationKey().orElse("");
+            BibTeXEntry bibTeXEntry = new BibTeXEntry(new Key(bibEntry.getType().getName()), new Key(citeKey));
 
             // Not every field is already generated into latex free fields
-            HTMLChars latexToHtmlConverter = new HTMLChars();
             RemoveNewlinesFormatter removeNewlinesFormatter = new RemoveNewlinesFormatter();
-            for (String key : bibEntry.getFieldMap().keySet()) {
-                bibEntry.getField(key)
+
+            Optional<BibEntryType> entryType = entryTypesManager.enrich(bibEntry.getType(), bibDatabaseContext.getMode());
+
+            Set<Field> fields = entryType.map(BibEntryType::getAllFields).orElse(bibEntry.getFields());
+
+            for (Field key : fields) {
+                bibEntry.getResolvedFieldOrAlias(key, bibDatabaseContext.getDatabase())
                         .map(removeNewlinesFormatter::format)
-                        .map(latexToHtmlConverter::format)
-                        .ifPresent(value -> bibTeXEntry.addField(new Key(key), new DigitStringValue(value)));
+                        .map(LatexToUnicodeAdapter::format)
+                        .ifPresent(value -> {
+                            if (StandardField.MONTH.equals(key)) {
+                                // Change month from #mon# to mon because CSL does not support the former format
+                                value = bibEntry.getMonth().map(Month::getShortName).orElse(value);
+                            }
+                            bibTeXEntry.addField(new Key(key.getName()), new DigitStringValue(value));
+                        });
             }
             return BIBTEX_CONVERTER.toItemData(bibTeXEntry);
         }
 
-        public void setData(List<BibEntry> data) {
+        public void setData(List<BibEntry> data, BibDatabaseContext bibDatabaseContext, BibEntryTypesManager entryTypesManager) {
             this.data.clear();
             this.data.addAll(data);
+            this.bibDatabaseContext = bibDatabaseContext;
+            this.entryTypesManager = entryTypesManager;
         }
 
         @Override
         public CSLItemData retrieveItem(String id) {
             return data.stream()
-                    .filter(entry -> entry.getCiteKeyOptional().orElse("").equals(id))
-                    .map(JabRefItemDataProvider::bibEntryToCSLItemData)
-                    .findFirst().orElse(null);
+                       .filter(entry -> entry.getCitationKey().orElse("").equals(id))
+                       .map(entry -> JabRefItemDataProvider.bibEntryToCSLItemData(entry, bibDatabaseContext, entryTypesManager))
+                       .findFirst().orElse(null);
         }
 
         @Override
-        public String[] getIds() {
+        public Collection<String> getIds() {
             return data.stream()
-                    .map(entry -> entry.getCiteKeyOptional().orElse(""))
-                    .toArray(String[]::new);
+                       .map(entry -> entry.getCitationKey().orElse(""))
+                       .toList();
         }
     }
 }

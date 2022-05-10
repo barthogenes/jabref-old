@@ -5,11 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Test case  that verifies the functionalities of the
- * formater AuthorLastFirstAbbreviator.
- *
- * @author Carlos Silla
- * @author Christopher Oezbek <oezi@oezi.de>
+ * Test case  that verifies the functionalities of the formater AuthorLastFirstAbbreviator.
  */
 class AuthorLastFirstAbbreviatorTester {
 
@@ -63,5 +59,4 @@ class AuthorLastFirstAbbreviatorTester {
     private String abbreviate(String name) {
         return new AuthorLastFirstAbbreviator().format(name);
     }
-
 }

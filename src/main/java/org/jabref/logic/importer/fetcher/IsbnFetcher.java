@@ -1,34 +1,37 @@
 package org.jabref.logic.importer.fetcher;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
+import org.jabref.logic.help.HelpFile;
+import org.jabref.logic.importer.EntryBasedFetcher;
 import org.jabref.logic.importer.FetcherException;
+import org.jabref.logic.importer.IdBasedFetcher;
 import org.jabref.logic.importer.ImportFormatPreferences;
 import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.field.StandardField;
+import org.jabref.model.strings.StringUtil;
+import org.jabref.model.util.OptionalUtil;
 
-import org.jsoup.helper.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Fetcher for ISBN trying ebook.de first and then chimbori.com
+ * Fetcher for ISBN trying ebook.de first, chimbori.com and then ottobib
  */
-public class IsbnFetcher extends AbstractIsbnFetcher {
+public class IsbnFetcher implements EntryBasedFetcher, IdBasedFetcher {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IsbnFetcher.class);
+    private static final Pattern NEWLINE_SPACE_PATTERN = Pattern.compile("\\n|\\r\\n|\\s");
+    protected final ImportFormatPreferences importFormatPreferences;
 
     private IsbnViaEbookDeFetcher isbnViaEbookDeFetcher;
     private IsbnViaChimboriFetcher isbnViaChimboriFetcher;
 
     public IsbnFetcher(ImportFormatPreferences importFormatPreferences) {
-        super(importFormatPreferences);
-        isbnViaEbookDeFetcher = new IsbnViaEbookDeFetcher(importFormatPreferences);
-        isbnViaChimboriFetcher = new IsbnViaChimboriFetcher(importFormatPreferences);
-    }
-
-    public IsbnFetcher(ImportFormatPreferences importFormatPreferences, IsbnViaEbookDeFetcher isbnViaEbookDeFetcher, IsbnViaChimboriFetcher isbnViaChimboriFetcher) {
-        super(importFormatPreferences);
-        this.isbnViaEbookDeFetcher = isbnViaEbookDeFetcher;
-        this.isbnViaChimboriFetcher = isbnViaChimboriFetcher;
+        this.importFormatPreferences = importFormatPreferences;
     }
 
     @Override
@@ -36,12 +39,9 @@ public class IsbnFetcher extends AbstractIsbnFetcher {
         return "ISBN";
     }
 
-    /**
-     * Method never used
-     */
     @Override
-    public URL getURLForID(String identifier) throws URISyntaxException, MalformedURLException, FetcherException {
-        return null;
+    public Optional<HelpFile> getHelpPage() {
+        return Optional.of(HelpFile.FETCHER_ISBN);
     }
 
     @Override
@@ -49,23 +49,29 @@ public class IsbnFetcher extends AbstractIsbnFetcher {
         if (StringUtil.isBlank(identifier)) {
             return Optional.empty();
         }
+        // remove any newlines and spaces.
+        identifier = NEWLINE_SPACE_PATTERN.matcher(identifier).replaceAll("");
 
-        this.ensureThatIsbnIsValid(identifier);
+        OpenLibraryFetcher openLibraryFetcher = new OpenLibraryFetcher(importFormatPreferences);
+        Optional<BibEntry> bibEntry = openLibraryFetcher.performSearchById(identifier);
 
-        Optional<BibEntry> bibEntry = isbnViaEbookDeFetcher.performSearchById(identifier);
-        // nothing found at ebook.de, try chimbori.com
+        // nothing found at OpenLibrary: try ebook.de
         if (!bibEntry.isPresent()) {
-            LOGGER.debug("No entry found at ebook.de try chimbori.com");
-            bibEntry = isbnViaChimboriFetcher.performSearchById(identifier);
-
+            LOGGER.debug("No entry found at OpenLibrary; trying ebook.de");
+            IsbnViaEbookDeFetcher isbnViaEbookDeFetcher = new IsbnViaEbookDeFetcher(importFormatPreferences);
+            bibEntry = isbnViaEbookDeFetcher.performSearchById(identifier);
         }
 
         return bibEntry;
     }
 
     @Override
-    public void doPostCleanup(BibEntry entry) {
-        // no action needed
+    public List<BibEntry> performSearch(BibEntry entry) throws FetcherException {
+        Optional<String> isbn = entry.getField(StandardField.ISBN);
+        if (isbn.isPresent()) {
+            return OptionalUtil.toList(performSearchById(isbn.get()));
+        } else {
+            return Collections.emptyList();
+        }
     }
-
 }

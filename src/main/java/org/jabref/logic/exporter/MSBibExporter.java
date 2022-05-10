@@ -1,7 +1,6 @@
 package org.jabref.logic.exporter;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
@@ -31,18 +30,18 @@ class MSBibExporter extends Exporter {
 
     @Override
     public void export(final BibDatabaseContext databaseContext, final Path file,
-                       final Charset encoding, List<BibEntry> entries) throws SaveException {
+                       List<BibEntry> entries) throws SaveException {
         Objects.requireNonNull(databaseContext);
         Objects.requireNonNull(entries);
 
         if (entries.isEmpty()) {
             return;
         }
-        // forcing to use UTF8 output format for some problems with xml export in other encodings
-        SaveSession session = new FileSaveSession(StandardCharsets.UTF_8, false);
+
         MSBibDatabase msBibDatabase = new MSBibDatabase(databaseContext.getDatabase(), entries);
 
-        try (VerifyingWriter ps = session.getWriter()) {
+        // forcing to use UTF8 output format for some problems with xml export in other encodings
+        try (AtomicFileWriter ps = new AtomicFileWriter(file, StandardCharsets.UTF_8)) {
             try {
                 DOMSource source = new DOMSource(msBibDatabase.getDomForExport());
                 StreamResult result = new StreamResult(ps);
@@ -52,7 +51,6 @@ class MSBibExporter extends Exporter {
             } catch (TransformerException | IllegalArgumentException | TransformerFactoryConfigurationError e) {
                 throw new SaveException(e);
             }
-            session.finalize(file);
         } catch (IOException ex) {
             throw new SaveException(ex);
         }

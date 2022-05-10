@@ -16,14 +16,11 @@ public class BibtexPurify {
     }
 
     /**
-     *
      * @param toPurify
-     * @param warn
-     *            may-be-null
+     * @param warn     may-be-null
      * @return
      */
     public static String purify(String toPurify, Warn warn) {
-
         StringBuilder sb = new StringBuilder();
 
         char[] cs = toPurify.toCharArray();

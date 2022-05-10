@@ -11,7 +11,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,13 +33,9 @@ import org.jabref.model.entry.BibEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @author alver
- */
 public class OpenOfficeDocumentCreator extends Exporter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenOfficeDocumentCreator.class);
-
 
     /**
      * Creates a new instance of OpenOfficeDocumentCreator
@@ -65,7 +60,6 @@ public class OpenOfficeDocumentCreator extends Exporter {
             OpenOfficeDocumentCreator.addResourceFile("mimetype", "/resource/openoffice/mimetype", out);
             OpenOfficeDocumentCreator.addResourceFile("META-INF/manifest.xml", "/resource/openoffice/manifest.xml",
                     out);
-
         }
     }
 
@@ -87,7 +81,7 @@ public class OpenOfficeDocumentCreator extends Exporter {
 
     @Override
     public void export(final BibDatabaseContext databaseContext, final Path file,
-                       final Charset encoding, List<BibEntry> entries) throws Exception {
+                       List<BibEntry> entries) throws Exception {
         Objects.requireNonNull(databaseContext);
         Objects.requireNonNull(entries);
         if (!entries.isEmpty()) { // Do not export if no entries
@@ -107,7 +101,6 @@ public class OpenOfficeDocumentCreator extends Exporter {
         } catch (Exception e) {
             throw new Error(e);
         }
-
     }
 
     private static void addResourceFile(String name, String resource, ZipOutputStream out) throws IOException {

@@ -2,10 +2,8 @@ package org.jabref.logic.importer.fileformat;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +31,7 @@ public class ImporterTestEngine {
      * @throws IOException if there is a problem when trying to read the files in the file system
      */
     public static Collection<String> getTestFiles(Predicate<String> fileNamePredicate) throws IOException {
-        try (Stream<Path> stream = Files.list(Paths.get(TEST_RESOURCES))) {
+        try (Stream<Path> stream = Files.list(Path.of(TEST_RESOURCES))) {
             return stream
                     .map(path -> path.getFileName().toString())
                     .filter(fileNamePredicate)
@@ -42,15 +40,15 @@ public class ImporterTestEngine {
     }
 
     public static void testIsRecognizedFormat(Importer importer, String fileName) throws IOException {
-        Assertions.assertTrue(importer.isRecognizedFormat(getPath(fileName), StandardCharsets.UTF_8));
+        Assertions.assertTrue(importer.isRecognizedFormat(getPath(fileName)));
     }
 
     public static void testIsNotRecognizedFormat(Importer importer, String fileName) throws IOException {
-        Assertions.assertFalse(importer.isRecognizedFormat(getPath(fileName), StandardCharsets.UTF_8));
+        Assertions.assertFalse(importer.isRecognizedFormat(getPath(fileName)));
     }
 
     public static void testImportEntries(Importer importer, String fileName, String fileType) throws IOException, ImportException {
-        ParserResult parserResult = importer.importDatabase(getPath(fileName), StandardCharsets.UTF_8);
+        ParserResult parserResult = importer.importDatabase(getPath(fileName));
         if (parserResult.isInvalid()) {
             throw new ImportException(parserResult.getErrorMessage());
         }
@@ -61,15 +59,15 @@ public class ImporterTestEngine {
 
     private static Path getPath(String fileName) throws IOException {
         try {
-            return Paths.get(ImporterTestEngine.class.getResource(fileName).toURI());
+            return Path.of(ImporterTestEngine.class.getResource(fileName).toURI());
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
     }
 
     public static void testImportMalformedFiles(Importer importer, String fileName) throws IOException {
-        List<BibEntry> entries = importer.importDatabase(getPath(fileName), StandardCharsets.UTF_8).getDatabase()
-                .getEntries();
+        List<BibEntry> entries = importer.importDatabase(getPath(fileName)).getDatabase()
+                                         .getEntries();
         assertEquals(entries, new ArrayList<BibEntry>());
     }
 }

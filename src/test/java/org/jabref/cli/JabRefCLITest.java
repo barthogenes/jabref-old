@@ -7,43 +7,126 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class JabRefCLITest {
+class JabRefCLITest {
+
+    private final String bibtex = "@article{test, title=\"test title\"}";
 
     @Test
-    public void testCLIParsingLongOptions() {
-        JabRefCLI cli = new JabRefCLI(new String[] {"--nogui", "--import=some/file", "--output=some/export/file"});
+    void emptyCLILeftOversLongOptions() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"--nogui", "--import=some/file", "--output=some/export/file"});
 
         assertEquals(Collections.emptyList(), cli.getLeftOver());
-        assertEquals("some/file", cli.getFileImport());
+    }
+
+    @Test
+    void guiIsDisabledLongOptions() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"--nogui", "--import=some/file", "--output=some/export/file"});
+
         assertTrue(cli.isDisableGui());
+    }
+
+    @Test
+    void successfulParsingOfFileImportCLILongOptions() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"--nogui", "--import=some/file", "--output=some/export/file"});
+
+        assertEquals("some/file", cli.getFileImport());
+    }
+
+    @Test
+    void successfulParsingOfFileExportCLILongOptions() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"--nogui", "--import=some/file", "--output=some/export/file"});
+
         assertEquals("some/export/file", cli.getFileExport());
     }
 
     @Test
-    public void testCLIParsingShortOptions() {
-        JabRefCLI cli = new JabRefCLI(new String[] {"-n", "-i=some/file", "-o=some/export/file"});
+    void emptyCLILeftOversShortOptions() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-n", "-i=some/file", "-o=some/export/file"});
 
         assertEquals(Collections.emptyList(), cli.getLeftOver());
-        assertEquals("some/file", cli.getFileImport());
+    }
+
+    @Test
+    void guiIsDisabledShortOptions() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-n", "-i=some/file", "-o=some/export/file"});
+
         assertTrue(cli.isDisableGui());
+    }
+
+    @Test
+    void successfulParsingOfFileImportShortOptions() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-n", "-i=some/file", "-o=some/export/file"});
+
+        assertEquals("some/file", cli.getFileImport());
+    }
+
+    @Test
+    void successfulParsingOfFileExportShortOptions() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-n", "-i=some/file", "-o=some/export/file"});
+
         assertEquals("some/export/file", cli.getFileExport());
     }
 
     @Test
-    public void testPreferencesExport() {
-        JabRefCLI cli = new JabRefCLI(new String[] {"-n", "-x=some/file"});
+    void emptyPreferencesLeftOver() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-n", "-x=some/file"});
 
         assertEquals(Collections.emptyList(), cli.getLeftOver());
+    }
+
+    @Test
+    void successfulExportOfPreferences() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-n", "-x=some/file"});
+
         assertEquals("some/file", cli.getPreferencesExport());
+    }
+
+    @Test
+    void guiDisabledForPreferencesExport() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-n", "-x=some/file"});
+
         assertTrue(cli.isDisableGui());
     }
 
     @Test
-    public void recognizesImportBibtex() {
-        String bibtex = "@article{test, title=\"test title\"}";
+    void emptyLeftOversCLIShortImportingBibtex() throws Exception {
         JabRefCLI cli = new JabRefCLI(new String[]{"-ib", bibtex});
+
         assertEquals(Collections.emptyList(), cli.getLeftOver());
+    }
+
+    @Test
+    void recognizesImportBibtexShort() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-ib", bibtex});
+
         assertTrue(cli.isBibtexImport());
+    }
+
+    @Test
+    void successfulParsingOfBibtexImportShort() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-ib", bibtex});
+
+        assertEquals(bibtex, cli.getBibtexImport());
+    }
+
+    @Test
+    void emptyLeftOversCLILongImportingBibtex() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-importBibtex", bibtex});
+
+        assertEquals(Collections.emptyList(), cli.getLeftOver());
+    }
+
+    @Test
+    void recognizesImportBibtexLong() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-importBibtex", bibtex});
+
+        assertTrue(cli.isBibtexImport());
+    }
+
+    @Test
+    void successfulParsingOfBibtexImportLong() throws Exception {
+        JabRefCLI cli = new JabRefCLI(new String[]{"-importBibtex", bibtex});
+
         assertEquals(bibtex, cli.getBibtexImport());
     }
 }

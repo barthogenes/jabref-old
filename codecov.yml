@@ -2,7 +2,10 @@ codecov:
   branch: master
 coverage:
   ignore:
-  - src/gen/.*
+  - src/generated/.*
   status:
     patch: false
-comment: off
+    project:
+      default:
+        threshold: 0.01
+comment: false

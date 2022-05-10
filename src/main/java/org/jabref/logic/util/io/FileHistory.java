@@ -1,18 +1,20 @@
 package org.jabref.logic.util.io;
 
-import java.util.LinkedList;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class FileHistory {
 
     private static final int HISTORY_SIZE = 8;
 
-    private final LinkedList<String> history;
+    private final ObservableList<Path> history;
 
-
-    public FileHistory(List<String> fileList) {
-        history = new LinkedList<>(Objects.requireNonNull(fileList));
+    public FileHistory(List<Path> files) {
+        history = FXCollections.observableList(Objects.requireNonNull(files));
     }
 
     public int size() {
@@ -24,28 +26,25 @@ public class FileHistory {
     }
 
     /**
-     * Adds the filename to the top of the list. If it already is in the list, it is merely moved to the top.
-     *
-     * @param filename a <code>String</code> value
+     * Adds the file to the top of the list. If it already is in the list, it is merely moved to the top.
      */
-
-    public void newFile(String filename) {
-        removeItem(filename);
-        history.addFirst(filename);
+    public void newFile(Path file) {
+        removeItem(file);
+        history.add(0, file);
         while (size() > HISTORY_SIZE) {
-            history.removeLast();
+            history.remove(HISTORY_SIZE);
         }
     }
 
-    public String getFileName(int i) {
-        return history.get(i);
+    public Path getFileAt(int index) {
+        return history.get(index);
     }
 
-    public void removeItem(String filename) {
-        history.remove(filename);
+    public void removeItem(Path file) {
+        history.remove(file);
     }
 
-    public List<String> getHistory() {
+    public ObservableList<Path> getHistory() {
         return history;
     }
 }

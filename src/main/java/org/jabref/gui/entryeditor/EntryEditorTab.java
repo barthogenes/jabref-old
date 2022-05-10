@@ -2,8 +2,8 @@ package org.jabref.gui.entryeditor;
 
 import javafx.scene.control.Tab;
 
-import org.jabref.gui.util.DefaultTaskExecutor;
 import org.jabref.model.entry.BibEntry;
+import org.jabref.model.entry.types.EntryType;
 
 public abstract class EntryEditorTab extends Tab {
 
@@ -12,7 +12,7 @@ public abstract class EntryEditorTab extends Tab {
     /**
      * Needed to track for which type of entry this tab was build and to rebuild it if the type changes
      */
-    private String currentEntryType = "";
+    private EntryType currentEntryType;
 
     /**
      * Decide whether to show this tab for the given entry.
@@ -36,12 +36,25 @@ public abstract class EntryEditorTab extends Tab {
      * Notifies the tab that it got focus and should display the given entry.
      */
     public void notifyAboutFocus(BibEntry entry) {
-        if (!entry.equals(currentEntry) || !currentEntryType.equals(entry.getType())) {
+        if (!entry.equals(currentEntry) || !entry.getType().equals(currentEntryType)) {
             currentEntry = entry;
             currentEntryType = entry.getType();
-            DefaultTaskExecutor.runInJavaFXThread(() -> bindToEntry(entry));
+            bindToEntry(entry);
         }
         handleFocus();
     }
 
+    /**
+     * Switch to next Preview style - should be overriden if a EntryEditorTab is actually showing a preview
+     */
+    protected void nextPreviewStyle() {
+        // do nothing by default
+    }
+
+    /**
+     * Switch to previous Preview style - should be overriden if a EntryEditorTab is actually showing a preview
+     */
+    protected void previousPreviewStyle() {
+        // do nothing by default
+    }
 }

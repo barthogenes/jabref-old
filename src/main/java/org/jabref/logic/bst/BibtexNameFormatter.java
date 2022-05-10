@@ -33,9 +33,9 @@ public class BibtexNameFormatter {
      * Formats the nth author of the author name list by a given format string
      *
      * @param authorsNameList The string from an author field
-     * @param whichName index of the list, starting with 1
-     * @param formatString TODO
-     * @param warn collects the warnings, may-be-null
+     * @param whichName       index of the list, starting with 1
+     * @param formatString    TODO
+     * @param warn            collects the warnings, may-be-null
      * @return
      */
     public static String formatName(String authorsNameList, int whichName, String formatString, Warn warn) {
@@ -52,7 +52,6 @@ public class BibtexNameFormatter {
      * @param warn collects the warnings, may-be-null
      */
     public static String formatName(Author author, String format, Warn warn) {
-
         StringBuilder sb = new StringBuilder();
 
         char[] c = format.toCharArray();
@@ -108,20 +107,20 @@ public class BibtexNameFormatter {
 
                 Optional<String> tokenS;
                 switch (type) {
-                case 'f':
-                    tokenS = author.getFirst();
-                    break;
-                case 'v':
-                    tokenS = author.getVon();
-                    break;
-                case 'l':
-                    tokenS = author.getLast();
-                    break;
-                case 'j':
-                    tokenS = author.getJr();
-                    break;
-                default:
-                    throw new VMException("Internal error");
+                    case 'f':
+                        tokenS = author.getFirst();
+                        break;
+                    case 'v':
+                        tokenS = author.getVon();
+                        break;
+                    case 'l':
+                        tokenS = author.getLast();
+                        break;
+                    case 'j':
+                        tokenS = author.getJr();
+                        break;
+                    default:
+                        throw new VMException("Internal error");
                 }
 
                 if (!tokenS.isPresent()) {
@@ -156,7 +155,6 @@ public class BibtexNameFormatter {
                 int groupStart = sb.length();
 
                 for (int j = 0; j < d.length; j++) {
-
                     if (Character.isLetter(d[j]) && (bLevel == 1)) {
                         groupStart = sb.length();
                         if (!abbreviateThatIsSingleLetter) {
@@ -174,7 +172,7 @@ public class BibtexNameFormatter {
                                 String[] dashes = token.split("-");
 
                                 token = Arrays.asList(dashes).stream().map(BibtexNameFormatter::getFirstCharOfString)
-                                        .collect(Collectors.joining(".-"));
+                                              .collect(Collectors.joining(".-"));
                             }
 
                             // Output token
@@ -215,7 +213,7 @@ public class BibtexNameFormatter {
                     boolean noDisTie = false;
                     if ((sb.charAt(sb.length() - 1) == '~') &&
                             ((BibtexNameFormatter.numberOfChars(sb.substring(groupStart, sb.length()), 4) >= 4) ||
-                            ((sb.length() > 1) && (noDisTie = sb.charAt(sb.length() - 2) == '~')))) {
+                                    ((sb.length() > 1) && (noDisTie = sb.charAt(sb.length() - 2) == '~')))) {
                         sb.deleteCharAt(sb.length() - 1);
                         if (!noDisTie) {
                             sb.append(' ');
@@ -240,14 +238,8 @@ public class BibtexNameFormatter {
 
     /**
      * Including the matching brace.
-     *
-     * @param interTokenSb
-     * @param c
-     * @param pos
-     * @return
      */
     public static int consumeToMatchingBrace(StringBuilder interTokenSb, char[] c, int pos) {
-
         int braceLevel = 0;
 
         for (int i = pos; i < c.length; i++) {
@@ -267,9 +259,6 @@ public class BibtexNameFormatter {
 
     /**
      * Takes care of special characters too
-     *
-     * @param s
-     * @return
      */
     public static String getFirstCharOfString(String s) {
         char[] c = s.toCharArray();
@@ -320,5 +309,4 @@ public class BibtexNameFormatter {
         }
         return result;
     }
-
 }

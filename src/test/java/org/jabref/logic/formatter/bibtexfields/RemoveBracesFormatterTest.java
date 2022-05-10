@@ -38,6 +38,11 @@ public class RemoveBracesFormatterTest {
     }
 
     @Test
+    public void formatRemovesBracesOnly() {
+        assertEquals("", formatter.format("{}"));
+    }
+
+    @Test
     public void formatKeepsEmptyString() {
         assertEquals("", formatter.format(""));
     }
@@ -72,5 +77,4 @@ public class RemoveBracesFormatterTest {
     public void formatExample() {
         assertEquals("In CDMA", formatter.format(formatter.getExampleInput()));
     }
-
 }

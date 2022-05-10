@@ -18,6 +18,7 @@ import org.jabref.model.groups.KeywordGroup;
 import org.jabref.model.groups.RegexKeywordGroup;
 import org.jabref.model.groups.SearchGroup;
 import org.jabref.model.groups.TexGroup;
+import org.jabref.model.search.rules.SearchRules;
 import org.jabref.model.strings.StringUtil;
 
 public class GroupSerializer {
@@ -46,7 +47,7 @@ public class GroupSerializer {
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
         sb.append(group.getHierarchicalContext().ordinal());
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
-        sb.append(StringUtil.quote(group.getSearchField(), MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR, MetadataSerializationConfiguration.GROUP_QUOTE_CHAR));
+        sb.append(StringUtil.quote(group.getSearchField().getName(), MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR, MetadataSerializationConfiguration.GROUP_QUOTE_CHAR));
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
         sb.append(StringUtil.quote(group.getSearchExpression(), MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR, MetadataSerializationConfiguration.GROUP_QUOTE_CHAR));
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
@@ -69,9 +70,9 @@ public class GroupSerializer {
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
         sb.append(StringUtil.quote(group.getSearchExpression(), MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR, MetadataSerializationConfiguration.GROUP_QUOTE_CHAR));
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
-        sb.append(StringUtil.booleanToBinaryString(group.isCaseSensitive()));
+        sb.append(StringUtil.booleanToBinaryString(group.getSearchFlags().contains(SearchRules.SearchFlags.CASE_SENSITIVE)));
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
-        sb.append(StringUtil.booleanToBinaryString(group.isRegularExpression()));
+        sb.append(StringUtil.booleanToBinaryString(group.getSearchFlags().contains(SearchRules.SearchFlags.REGULAR_EXPRESSION)));
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
 
         appendGroupDetails(sb, group);
@@ -99,7 +100,6 @@ public class GroupSerializer {
      * @return a representation of the tree based at this node as a list of strings
      */
     public List<String> serializeTree(GroupTreeNode node) {
-
         List<String> representation = new ArrayList<>();
 
         // Append current node
@@ -117,13 +117,13 @@ public class GroupSerializer {
         if (group instanceof AllEntriesGroup) {
             return serializeAllEntriesGroup();
         } else if (group instanceof ExplicitGroup) {
-            return serializeExplicitGroup((ExplicitGroup)group);
+            return serializeExplicitGroup((ExplicitGroup) group);
         } else if (group instanceof KeywordGroup) {
-            return serializeKeywordGroup((KeywordGroup)group);
+            return serializeKeywordGroup((KeywordGroup) group);
         } else if (group instanceof SearchGroup) {
-            return serializeSearchGroup((SearchGroup)group);
+            return serializeSearchGroup((SearchGroup) group);
         } else if (group instanceof AutomaticKeywordGroup) {
-            return serializeAutomaticKeywordGroup((AutomaticKeywordGroup)group);
+            return serializeAutomaticKeywordGroup((AutomaticKeywordGroup) group);
         } else if (group instanceof AutomaticPersonsGroup) {
             return serializeAutomaticPersonsGroup((AutomaticPersonsGroup) group);
         } else if (group instanceof TexGroup) {
@@ -152,7 +152,7 @@ public class GroupSerializer {
         StringBuilder sb = new StringBuilder();
         sb.append(MetadataSerializationConfiguration.AUTOMATIC_PERSONS_GROUP_ID);
         appendAutomaticGroupDetails(sb, group);
-        sb.append(StringUtil.quote(group.getField(), MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR, MetadataSerializationConfiguration.GROUP_QUOTE_CHAR));
+        sb.append(StringUtil.quote(group.getField().getName(), MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR, MetadataSerializationConfiguration.GROUP_QUOTE_CHAR));
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
         appendGroupDetails(sb, group);
         return sb.toString();
@@ -169,7 +169,7 @@ public class GroupSerializer {
         StringBuilder sb = new StringBuilder();
         sb.append(MetadataSerializationConfiguration.AUTOMATIC_KEYWORD_GROUP_ID);
         appendAutomaticGroupDetails(sb, group);
-        sb.append(StringUtil.quote(group.getField(), MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR, MetadataSerializationConfiguration.GROUP_QUOTE_CHAR));
+        sb.append(StringUtil.quote(group.getField().getName(), MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR, MetadataSerializationConfiguration.GROUP_QUOTE_CHAR));
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);
         sb.append(StringUtil.quote(group.getKeywordDelimiter().toString(), MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR, MetadataSerializationConfiguration.GROUP_QUOTE_CHAR));
         sb.append(MetadataSerializationConfiguration.GROUP_UNIT_SEPARATOR);

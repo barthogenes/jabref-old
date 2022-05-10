@@ -1,13 +1,13 @@
 package org.jabref.logic.layout.format;
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NameFormatterTest {
 
     @Test
     public void testFormatStringStringBibtexEntry() {
-
         NameFormatter l = new NameFormatter();
 
         assertEquals("Doe", l.format("Joe Doe", "1@*@{ll}"));
@@ -27,12 +27,10 @@ public class NameFormatterTest {
         assertEquals("Doe Joe and Jane, M. and Kamp, J.~A.",
                 l.format("Joe Doe and Mary Jane and John Arthur van Kamp",
                         "1@*@{ll}, {ff}@@*@1@{ll} {ff}@2..-1@ and {ll}, {f}."));
-
     }
 
     @Test
     public void testFormat() {
-
         NameFormatter a = new NameFormatter();
 
         // Empty case
@@ -58,5 +56,4 @@ public class NameFormatterTest {
         assertEquals("von Neumann John, Smith, John, Vandekamp, Mary~Ann and Black~Brown, Peter", a.format(
                 "von Neumann, John and Smith, John and Vandekamp, Mary Ann and Black Brown, Peter", formatString));
     }
-
 }

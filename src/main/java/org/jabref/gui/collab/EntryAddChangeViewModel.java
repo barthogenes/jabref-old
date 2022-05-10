@@ -1,46 +1,53 @@
 package org.jabref.gui.collab;
 
-import javax.swing.JComponent;
+import javafx.scene.Node;
 
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Scene;
-
-import org.jabref.gui.BasePanel;
-import org.jabref.gui.PreviewPanel;
-import org.jabref.gui.customjfx.CustomJFXPanel;
+import org.jabref.gui.DialogService;
+import org.jabref.gui.StateManager;
+import org.jabref.gui.preview.PreviewViewer;
+import org.jabref.gui.theme.ThemeManager;
 import org.jabref.gui.undo.NamedCompound;
-import org.jabref.gui.undo.UndoableInsertEntry;
+import org.jabref.gui.undo.UndoableInsertEntries;
 import org.jabref.logic.l10n.Localization;
-import org.jabref.model.database.BibDatabase;
+import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
-import org.jabref.model.entry.IdGenerator;
+import org.jabref.preferences.PreferencesService;
 
-class EntryAddChangeViewModel extends ChangeViewModel {
+class EntryAddChangeViewModel extends DatabaseChangeViewModel {
 
-    private final BibEntry diskEntry;
-    private final JFXPanel container;
+    private final BibEntry entry;
+    private final PreferencesService preferencesService;
+    private final DialogService dialogService;
+    private final StateManager stateManager;
+    private final ThemeManager themeManager;
 
-
-    public EntryAddChangeViewModel(BibEntry diskEntry) {
-        super(Localization.lang("Added entry"));
-        this.diskEntry = diskEntry;
-
-        PreviewPanel previewPanel = new PreviewPanel(null, null);
-        previewPanel.setEntry(diskEntry);
-        container = CustomJFXPanel.wrap(new Scene(previewPanel));
+    public EntryAddChangeViewModel(BibEntry entry,
+                                   PreferencesService preferencesService,
+                                   DialogService dialogService,
+                                   StateManager stateManager,
+                                   ThemeManager themeManager) {
+        super();
+        this.dialogService = dialogService;
+        this.preferencesService = preferencesService;
+        this.themeManager = themeManager;
+        this.stateManager = stateManager;
+        this.name = entry.getCitationKey()
+                         .map(key -> Localization.lang("Added entry") + ": '" + key + '\'')
+                         .orElse(Localization.lang("Added entry"));
+        this.entry = entry;
     }
 
     @Override
-    public boolean makeChange(BasePanel panel, BibDatabase secondary, NamedCompound undoEdit) {
-        diskEntry.setId(IdGenerator.next());
-        panel.getDatabase().insertEntry(diskEntry);
-        secondary.insertEntry(diskEntry);
-        undoEdit.addEdit(new UndoableInsertEntry(panel.getDatabase(), diskEntry, panel));
-        return true;
+    public void makeChange(BibDatabaseContext database, NamedCompound undoEdit) {
+        database.getDatabase().insertEntry(entry);
+        undoEdit.addEdit(new UndoableInsertEntries(database.getDatabase(), entry));
     }
 
     @Override
-    public JComponent description() {
-        return container;
+    public Node description() {
+        PreviewViewer previewViewer = new PreviewViewer(new BibDatabaseContext(), dialogService, stateManager, themeManager);
+        previewViewer.setLayout(preferencesService.getPreviewPreferences().getSelectedPreviewLayout());
+        previewViewer.setEntry(entry);
+        return previewViewer;
     }
 }

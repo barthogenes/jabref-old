@@ -1,16 +1,15 @@
 package org.jabref.gui.desktop.os;
 
-import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
 
+import org.jabref.architecture.AllowedToUseAwt;
 import org.jabref.gui.externalfiletype.ExternalFileType;
 import org.jabref.gui.externalfiletype.ExternalFileTypes;
 
+@AllowedToUseAwt("Requires AWT to open a file")
 public class OSX implements NativeDesktop {
 
     @Override
@@ -34,17 +33,13 @@ public class OSX implements NativeDesktop {
 
     @Override
     public void openFolderAndSelectFile(Path file) throws IOException {
-        Desktop.getDesktop().open(file.getParent().toFile());
+        String[] cmd = {"/usr/bin/open", "-R", file.toString()};
+        Runtime.getRuntime().exec(cmd);
     }
 
     @Override
     public void openConsole(String absolutePath) throws IOException {
         Runtime.getRuntime().exec("open -a Terminal " + absolutePath, null, new File(absolutePath));
-    }
-
-    @Override
-    public void openPdfWithParameters(String filePath, List<String> parameters) throws IOException {
-        //TODO implement
     }
 
     @Override
@@ -54,6 +49,6 @@ public class OSX implements NativeDesktop {
 
     @Override
     public Path getApplicationDirectory() {
-        return Paths.get("/Applications");
+        return Path.of("/Applications");
     }
 }

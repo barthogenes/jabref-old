@@ -1,8 +1,6 @@
 package org.jabref.logic.importer.fetcher;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -24,7 +22,7 @@ import org.jabref.logic.importer.fileformat.BibtexParser;
 import org.jabref.logic.l10n.Localization;
 import org.jabref.logic.net.URLDownload;
 import org.jabref.model.entry.BibEntry;
-import org.jabref.model.entry.FieldName;
+import org.jabref.model.entry.field.StandardField;
 import org.jabref.model.strings.StringUtil;
 import org.jabref.model.util.DummyFileUpdateMonitor;
 
@@ -47,7 +45,6 @@ public class IacrEprintFetcher implements IdBasedFetcher {
     private static final Predicate<String> IDENTIFIER_PREDICATE = Pattern.compile("\\d{4}/\\d{3,5}").asPredicate();
     private static final String CITATION_URL_PREFIX = "https://eprint.iacr.org/eprint-bin/cite.pl?entry=";
     private static final String DESCRIPTION_URL_PREFIX = "https://eprint.iacr.org/";
-    private static final Charset WEBSITE_CHARSET = StandardCharsets.ISO_8859_1;
 
     private final ImportFormatPreferences prefs;
 
@@ -77,7 +74,7 @@ public class IacrEprintFetcher implements IdBasedFetcher {
         if (bibtexCitationHtml.contains("No such report found")) {
             throw new FetcherException(Localization.lang("No results found."));
         }
-        String actualEntry = getRequiredValueBetween("<PRE>", "</PRE>", bibtexCitationHtml);
+        String actualEntry = getRequiredValueBetween("<pre>", "</pre>", bibtexCitationHtml);
 
         try {
             return BibtexParser.singleFromString(actualEntry, prefs, new DummyFileUpdateMonitor());
@@ -89,17 +86,17 @@ public class IacrEprintFetcher implements IdBasedFetcher {
     private void setAdditionalFields(BibEntry entry, String identifier) throws FetcherException {
         String entryUrl = DESCRIPTION_URL_PREFIX + identifier;
         String descriptiveHtml = getHtml(entryUrl);
-        entry.setField(FieldName.ABSTRACT, getAbstract(descriptiveHtml));
+        entry.setField(StandardField.ABSTRACT, getAbstract(descriptiveHtml));
         String dateStringAsInHtml = getRequiredValueBetween("<b>Date: </b>", "<p />", descriptiveHtml);
-        entry.setField(FieldName.DATE, getLatestDate(dateStringAsInHtml));
+        entry.setField(StandardField.DATE, getLatestDate(dateStringAsInHtml));
 
         if (isFromOrAfterYear2000(entry)) {
             String version = getVersion(identifier, descriptiveHtml);
-            entry.setField(FieldName.VERSION, version);
-            entry.setField(FieldName.URL, entryUrl + "/" + version);
+            entry.setField(StandardField.VERSION, version);
+            entry.setField(StandardField.URL, entryUrl + "/" + version);
         } else {
             // No version information for entries before year 2000
-            entry.setField(FieldName.URL, entryUrl);
+            entry.setField(StandardField.URL, entryUrl);
         }
     }
 
@@ -174,7 +171,7 @@ public class IacrEprintFetcher implements IdBasedFetcher {
     private String getHtml(String url) throws FetcherException {
         try {
             URLDownload download = new URLDownload(url);
-            return download.asString(WEBSITE_CHARSET);
+            return download.asString();
         } catch (IOException e) {
             throw new FetcherException(Localization.lang("Could not retrieve entry data from '%0'.", url), e);
         }
@@ -190,7 +187,7 @@ public class IacrEprintFetcher implements IdBasedFetcher {
     }
 
     private boolean isFromOrAfterYear2000(BibEntry entry) throws FetcherException {
-        Optional<String> yearField = entry.getField(FieldName.YEAR);
+        Optional<String> yearField = entry.getField(StandardField.YEAR);
         if (yearField.isPresent()) {
             return Integer.parseInt(yearField.get()) > 2000;
         }

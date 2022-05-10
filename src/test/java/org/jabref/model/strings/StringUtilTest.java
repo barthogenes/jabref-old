@@ -3,10 +3,13 @@ package org.jabref.model.strings;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,10 +21,10 @@ class StringUtilTest {
 
     @Test
     void StringUtilClassIsSmall() throws Exception {
-        Path path = Paths.get("src", "main", "java", StringUtil.class.getName().replace('.', '/') + ".java");
+        Path path = Path.of("src", "main", "java", StringUtil.class.getName().replace('.', '/') + ".java");
         int lineCount = Files.readAllLines(path, StandardCharsets.UTF_8).size();
 
-        assertTrue(lineCount <= 725, "StringUtil increased in size to " + lineCount + ". "
+        assertTrue(lineCount <= 761, "StringUtil increased in size to " + lineCount + ". "
                 + "We try to keep this class as small as possible. "
                 + "Thus think twice if you add something to StringUtil.");
     }
@@ -56,7 +59,6 @@ class StringUtilTest {
     void testQuoteMoreComplicated() {
         assertEquals("a::b:%c:;", StringUtil.quote("a:b%c;", "%;", ':'));
     }
-
 
     @Test
     void testUnifyLineBreaks() {
@@ -107,7 +109,6 @@ class StringUtilTest {
 
     @Test
     void testShaveString() {
-
         assertEquals("", StringUtil.shaveString(null));
         assertEquals("", StringUtil.shaveString(""));
         assertEquals("aaa", StringUtil.shaveString("   aaa\t\t\n\r"));
@@ -120,7 +121,7 @@ class StringUtilTest {
 
     @Test
     void testJoin() {
-        String[] s = "ab/cd/ed".split("/");
+        String[] s = {"ab", "cd", "ed"};
         assertEquals("ab\\cd\\ed", StringUtil.join(s, "\\", 0, s.length));
 
         assertEquals("cd\\ed", StringUtil.join(s, "\\", 1, s.length));
@@ -129,7 +130,7 @@ class StringUtilTest {
 
         assertEquals("", StringUtil.join(s, "\\", 3, s.length));
 
-        assertEquals("", StringUtil.join(new String[] {}, "\\", 0, 0));
+        assertEquals("", StringUtil.join(new String[]{}, "\\", 0, 0));
     }
 
     @Test
@@ -146,7 +147,14 @@ class StringUtilTest {
 
     @Test
     void testGetPart() {
-        // Should be added
+        // Get word between braces
+        assertEquals("{makes}", StringUtil.getPart("Practice {makes} perfect", 8, false));
+        // When the string is empty and start Index equal zero
+        assertEquals("", StringUtil.getPart("", 0, false));
+        // When the word are in between close curly bracket
+        assertEquals("", StringUtil.getPart("A closed mouth catches no }flies}", 25, false));
+        // Get the word from the end of the sentence
+        assertEquals("bite", StringUtil.getPart("Barking dogs seldom bite", 19, true));
     }
 
     @Test
@@ -192,7 +200,6 @@ class StringUtilTest {
         assertFalse(StringUtil.isInCurlyBrackets("}"));
         assertFalse(StringUtil.isInCurlyBrackets("a{}a"));
         assertFalse(StringUtil.isInCurlyBrackets("{\\AA}sa {\\AA}Stor{\\aa}"));
-
     }
 
     @Test
@@ -303,10 +310,23 @@ class StringUtilTest {
     }
 
     @Test
-    void testRepeatSpaces() {
-        assertEquals("", StringUtil.repeatSpaces(0));
-        assertEquals(" ", StringUtil.repeatSpaces(1));
-        assertEquals("       ", StringUtil.repeatSpaces(7));
+    void replaceSpecialCharactersWithNonNormalizedUnicode() {
+        assertEquals("Modele", StringUtil.replaceSpecialCharacters("Modèle"));
+    }
+
+    static Stream<Arguments> testRepeatSpacesData() {
+        return Stream.of(
+                Arguments.of("", -1),
+                Arguments.of("", 0),
+                Arguments.of(" ", 1),
+                Arguments.of("       ", 7)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("testRepeatSpacesData")
+    void testRepeatSpaces(String result, int count) {
+        assertEquals(result, StringUtil.repeatSpaces(count));
     }
 
     @Test
@@ -344,5 +364,26 @@ class StringUtilTest {
         assertEquals("Hello world", StringUtil.capitalizeFirst("Hello World"));
         assertEquals("A", StringUtil.capitalizeFirst("a"));
         assertEquals("Aa", StringUtil.capitalizeFirst("AA"));
+    }
+
+    private static Stream<Arguments> getQuoteStringIfSpaceIsContainedData() {
+        return Stream.of(
+                Arguments.of("", ""),
+                Arguments.of("\" \"", " "),
+                Arguments.of("world", "world"),
+                Arguments.of("\"hello world\"", "hello world")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("getQuoteStringIfSpaceIsContainedData")
+    void testGuoteStringIfSpaceIsContained(String expected, String source) {
+        assertEquals(expected, StringUtil.quoteStringIfSpaceIsContained(source));
+    }
+
+    @Test
+    void testStripAccents() {
+        assertEquals("aAoeee", StringUtil.stripAccents("åÄöéèë"));
+        assertEquals("Muhlbach", StringUtil.stripAccents("Mühlbach"));
     }
 }

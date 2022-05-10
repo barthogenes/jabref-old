@@ -22,4 +22,8 @@ public class NormalizeMonthFormatterTest {
         assertEquals("#dec#", formatter.format(formatter.getExampleInput()));
     }
 
+    @Test
+    public void plainAprilShouldBeApril() {
+        assertEquals("#apr#", formatter.format("#apr#"));
+    }
 }

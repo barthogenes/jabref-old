@@ -2,18 +2,17 @@ package org.jabref.logic.layout.format;
 
 import org.jabref.logic.layout.LayoutFormatter;
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AuthorLastFirstCommasTest {
 
     /**
-     * Test method for
-     * {@link org.jabref.logic.layout.format.AuthorLastFirstCommas#format(java.lang.String)}.
+     * Test method for {@link org.jabref.logic.layout.format.AuthorLastFirstCommas#format(java.lang.String)}.
      */
     @Test
     public void testFormat() {
-
         LayoutFormatter a = new AuthorLastFirstCommas();
 
         // Empty case
@@ -33,5 +32,4 @@ public class AuthorLastFirstCommasTest {
         assertEquals("von Neumann, John, Smith, John and Black Brown, Peter", a
                 .format("John von Neumann and John Smith and Black Brown, Peter"));
     }
-
 }

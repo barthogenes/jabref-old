@@ -1,8 +1,6 @@
 package org.jabref.logic.importer.fileformat;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 
 import org.jabref.logic.util.StandardFileType;
@@ -15,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class BiblioscapeImporterTest {
 
     private BiblioscapeImporter importer;
-
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -45,8 +42,8 @@ public class BiblioscapeImporterTest {
 
     @Test
     public void testImportEntriesAbortion() throws Throwable {
-        Path file = Paths.get(BiblioscapeImporter.class.getResource("BiblioscapeImporterTestCorrupt.txt").toURI());
+        Path file = Path.of(BiblioscapeImporter.class.getResource("BiblioscapeImporterTestCorrupt.txt").toURI());
         assertEquals(Collections.emptyList(),
-                importer.importDatabase(file, StandardCharsets.UTF_8).getDatabase().getEntries());
+                importer.importDatabase(file).getDatabase().getEntries());
     }
 }

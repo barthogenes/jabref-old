@@ -1,8 +1,6 @@
 package org.jabref.logic.importer.fileformat;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,7 +24,6 @@ public class CopacImporterTest {
     @Test
     public void testsGetExtensions() {
         assertEquals(StandardFileType.TXT, importer.getFileType());
-
     }
 
     @Test
@@ -34,11 +31,10 @@ public class CopacImporterTest {
         assertEquals("Importer for COPAC format.", importer.getDescription());
     }
 
-
     @Test
     public void testImportEmptyEntries() throws Exception {
-        Path path = Paths.get(CopacImporterTest.class.getResource("Empty.txt").toURI());
-        List<BibEntry> entries = importer.importDatabase(path, StandardCharsets.UTF_8).getDatabase().getEntries();
+        Path path = Path.of(CopacImporterTest.class.getResource("Empty.txt").toURI());
+        List<BibEntry> entries = importer.importDatabase(path).getDatabase().getEntries();
         assertEquals(Collections.emptyList(), entries);
     }
 }

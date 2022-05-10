@@ -1,9 +1,12 @@
+---
+parent: Architectural Decisions
+nav_order: 2
+---
 # Use slf4j together with log4j2 for logging
 
 ## Context and Problem Statement
 
-Up to version 4.1 JabRef uses apache-commons-logging 1.2 for logging errors and messages.
-However, this is not compatible with java 9 and is superseded by log4j.
+Up to version 4.1 JabRef uses apache-commons-logging 1.2 for logging errors and messages. However, this is not compatible with java 9 and is superseded by log4j.
 
 ## Decision Drivers
 
@@ -18,7 +21,7 @@ However, this is not compatible with java 9 and is superseded by log4j.
 
 ## Decision Outcome
 
-Chosen option: "SLF4J with Log4j2 binding", because comes out best (see below).
+Chosen option: "SLF4J with Log4j2 binding", because comes out best \(see below\).
 
 ## Pros and Cons of the Options
 
@@ -45,6 +48,4 @@ Chosen option: "SLF4J with Log4j2 binding", because comes out best (see below).
 * Good, because native implementation of slf4j
 * Bad, because Java 9 support only available in alpha
 * Bad, because different syntax than log4j/commons logging
-
-
 

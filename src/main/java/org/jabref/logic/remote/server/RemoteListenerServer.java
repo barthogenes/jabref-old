@@ -10,6 +10,7 @@ import javafx.util.Pair;
 import org.jabref.logic.remote.RemotePreferences;
 import org.jabref.logic.remote.shared.Protocol;
 import org.jabref.logic.remote.shared.RemoteMessage;
+import org.jabref.preferences.PreferencesService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,15 +20,16 @@ public class RemoteListenerServer implements Runnable {
 
     private static final int BACKLOG = 1;
 
-    private static final int ONE_SECOND_TIMEOUT = 1000;
+    private static final int TIMEOUT = 1000;
 
     private final MessageHandler messageHandler;
     private final ServerSocket serverSocket;
+    private final PreferencesService preferencesService;
 
-
-    public RemoteListenerServer(MessageHandler messageHandler, int port) throws IOException {
+    public RemoteListenerServer(MessageHandler messageHandler, int port, PreferencesService preferencesService) throws IOException {
         this.serverSocket = new ServerSocket(port, BACKLOG, RemotePreferences.getIpAddress());
         this.messageHandler = messageHandler;
+        this.preferencesService = preferencesService;
     }
 
     @Override
@@ -35,7 +37,7 @@ public class RemoteListenerServer implements Runnable {
         try {
             while (!Thread.interrupted()) {
                 try (Socket socket = serverSocket.accept()) {
-                    socket.setSoTimeout(ONE_SECOND_TIMEOUT);
+                    socket.setSoTimeout(TIMEOUT);
 
                     try (Protocol protocol = new Protocol(socket)) {
                         Pair<RemoteMessage, Object> input = protocol.receiveMessage();
@@ -59,7 +61,7 @@ public class RemoteListenerServer implements Runnable {
                 break;
             case SEND_COMMAND_LINE_ARGUMENTS:
                 if (argument instanceof String[]) {
-                    messageHandler.handleCommandLineArguments((String[]) argument);
+                    messageHandler.handleCommandLineArguments((String[]) argument, preferencesService);
                     protocol.sendMessage(RemoteMessage.OK);
                 } else {
                     throw new IOException("Argument for 'SEND_COMMAND_LINE_ARGUMENTS' is not of type String[]. Got " + argument);
@@ -77,5 +79,4 @@ public class RemoteListenerServer implements Runnable {
             // Ignored
         }
     }
-
 }

@@ -2,7 +2,6 @@ package org.jabref.logic.importer.fileformat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -20,7 +19,6 @@ import org.jabref.logic.xmp.XmpUtilShared;
 public class PdfXmpImporter extends Importer {
 
     private final XmpPreferences xmpPreferences;
-
 
     public PdfXmpImporter(XmpPreferences xmpPreferences) {
         this.xmpPreferences = xmpPreferences;
@@ -53,7 +51,7 @@ public class PdfXmpImporter extends Importer {
     }
 
     @Override
-    public ParserResult importDatabase(Path filePath, Charset defaultEncoding) {
+    public ParserResult importDatabase(Path filePath) {
         Objects.requireNonNull(filePath);
         try {
             return new ParserResult(XmpUtilReader.readXmp(filePath, xmpPreferences));
@@ -73,7 +71,7 @@ public class PdfXmpImporter extends Importer {
      * contains at least one BibEntry.
      */
     @Override
-    public boolean isRecognizedFormat(Path filePath, Charset defaultEncoding) throws IOException {
+    public boolean isRecognizedFormat(Path filePath) throws IOException {
         Objects.requireNonNull(filePath);
         return XmpUtilShared.hasMetadata(filePath, xmpPreferences);
     }
@@ -87,5 +85,4 @@ public class PdfXmpImporter extends Importer {
     public String getDescription() {
         return "Wraps the XMPUtility function to be used as an Importer.";
     }
-
 }

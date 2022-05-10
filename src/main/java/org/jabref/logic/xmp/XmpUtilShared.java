@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * XMPUtilShared provides support for reading (@link XMPUtilReader) and writing (@link XMPUtilWriter) BibTex data as XMP-Metadata
+ * XMPUtilShared provides support for reading (@link XMPUtilReader) and writing (@link XMPUtilWriter) BibTex data as XMP metadata
  * in PDF-documents.
  */
 public class XmpUtilShared {
@@ -42,7 +42,7 @@ public class XmpUtilShared {
      * Caution: This method is as expensive as it is reading the actual metadata
      * itself from the PDF.
      *
-     * @param inputStream The inputStream to read the PDF from.
+     * @param path the path to the PDF.
      * @return whether a BibEntry was found in the given PDF.
      */
     public static boolean hasMetadata(Path path, XmpPreferences xmpPreferences) {
