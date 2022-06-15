@@ -17,9 +17,6 @@ on:
       - 'src/test/java/org/jabref/model/**'
       - '.github/workflows/tests-fetchers.yml'
       - 'build.gradle'
-  schedule:
-    # run on each Wednesday
-    - cron: '2 3 * * 3'
   workflow_dispatch:
 
 env:
