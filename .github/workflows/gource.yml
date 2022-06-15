@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - gource
-  schedule:
-    - cron:  '15 3 1 1,4,7,10 *'
   workflow_dispatch:
 
 jobs:
